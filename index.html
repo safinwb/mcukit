@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MCU Data Interface - Debug</title>
+    <title> ✨ MCU Kit</title>
     <style>
         * {
             margin: 0;
@@ -43,13 +44,26 @@
             animation: pulse 2s infinite;
         }
 
-        .status-connected { background-color: #2ecc71; }
-        .status-disconnected { background-color: #e74c3c; }
+        .status-connected {
+            background-color: #2ecc71;
+        }
+
+        .status-disconnected {
+            background-color: #e74c3c;
+        }
 
         @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 1;
+            }
         }
 
         .main-content {
@@ -187,7 +201,8 @@
             width: 200px;
         }
 
-        .connect-btn, .disconnect-btn {
+        .connect-btn,
+        .disconnect-btn {
             padding: 12px 25px;
             border: none;
             border-radius: 8px;
@@ -207,7 +222,8 @@
             color: white;
         }
 
-        .connect-btn:hover, .disconnect-btn:hover {
+        .connect-btn:hover,
+        .disconnect-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
@@ -235,11 +251,25 @@
             word-wrap: break-word;
         }
 
-        .log-entry.received { color: #2ecc71; }
-        .log-entry.sent { color: #f39c12; }
-        .log-entry.error { color: #e74c3c; }
-        .log-entry.raw { color: #9b59b6; }
-        .log-entry.info { color: #3498db; }
+        .log-entry.received {
+            color: #2ecc71;
+        }
+
+        .log-entry.sent {
+            color: #f39c12;
+        }
+
+        .log-entry.error {
+            color: #e74c3c;
+        }
+
+        .log-entry.raw {
+            color: #9b59b6;
+        }
+
+        .log-entry.info {
+            color: #3498db;
+        }
 
         .usage-section {
             grid-column: 1 / -1;
@@ -318,28 +348,29 @@
                 gap: 20px;
                 padding: 20px;
             }
-            
+
             .connection-input {
                 width: 150px;
                 margin: 5px;
             }
-            
+
             .param-item {
                 grid-template-columns: 1fr;
                 gap: 10px;
                 text-align: left;
             }
 
-            .param-item > * {
+            .param-item>* {
                 margin: 5px 0;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
-            <h1>MCU Data Interface</h1>
+            <h1>MCU Kit - Field Config Tool</h1>
             <div>
                 Status: <span id="connectionStatus">Disconnected</span>
                 <span id="statusIndicator" class="status-indicator status-disconnected"></span>
@@ -363,7 +394,8 @@
                     <button id="connectBtn" class="connect-btn">Connect Serial</button>
                     <button id="disconnectBtn" class="disconnect-btn">Disconnect</button>
                 </div>
-                <p style="color: #7f8c8d; font-size: 0.9em;">Select baud rate and click Connect to choose your COM port</p>
+                <p style="color: #7f8c8d; font-size: 0.9em;">Select baud rate and click Connect to choose your COM port
+                </p>
             </div>
 
             <div class="section">
@@ -403,11 +435,11 @@
                     <p><strong>Data Values (sensor readings, status, etc.):</strong></p>
                     <pre>$LOG,Temperature=25.3,Humidity=60,Pressure=1013
 $LOG,LED_Status=ON,Motor_Speed=150</pre>
-                    
+
                     <p><strong>Parameters (configurable settings):</strong></p>
                     <pre>$PARAM,MAX_TEMP=30,MIN_TEMP=10,THRESHOLD=50
 $PARAM,LED_BRIGHTNESS=80,MOTOR_SPEED=100</pre>
-                    
+
                     <ul>
                         <li>Each message must end with newline (<code>\n</code> or <code>\r\n</code>)</li>
                         <li>Use comma-separated key=value pairs</li>
@@ -419,33 +451,22 @@ $PARAM,LED_BRIGHTNESS=80,MOTOR_SPEED=100</pre>
                     <p><strong>Setting Parameters:</strong></p>
                     <pre>$SETPARAM,MAX_TEMP=35
 $SETPARAM,LED_BRIGHTNESS=90</pre>
-                    
+
                     <ul>
                         <li>Sent when user clicks "Set" button in Parameters section</li>
-                        <li>MCU should update the parameter and send back confirmation with <code>$PARAM</code> message</li>
+                        <li>MCU should update the parameter and send back confirmation with <code>$PARAM</code> message
+                        </li>
                     </ul>
 
                     <h3>🔄 Recommended MCU Code Structure</h3>
                     <p><strong>Arduino Example:</strong></p>
-                    <pre>// Send data values periodically
-Serial.println("$LOG,Temperature=25.3,Humidity=60");
-
-// Send parameters on startup or when changed
-Serial.println("$PARAM,MAX_TEMP=30,MIN_TEMP=10");
-
-// Handle incoming parameter changes
-if (Serial.available()) {
-  String cmd = Serial.readStringUntil('\n');
-  if (cmd.startsWith("$SETPARAM,")) {
-    // Parse and update parameter
-    // Send confirmation back
-    Serial.println("$PARAM,MAX_TEMP=35");  // Confirm new value
-  }
-}</pre>
+                    <pre>Will update this soon
+                    </pre>
 
                     <h3>💡 Tips</h3>
                     <ul>
-                        <li>Send <code>$PARAM</code> messages on MCU startup so interface knows available parameters</li>
+                        <li>Send <code>$PARAM</code> messages on MCU startup so interface knows available parameters
+                        </li>
                         <li>Update parameter values periodically or after changes</li>
                         <li>Use descriptive names for better user experience</li>
                         <li>Data values update automatically, parameters need user interaction to change</li>
@@ -466,7 +487,7 @@ if (Serial.available()) {
                 this.parameters = {};
                 this.previousParameters = {}; // Track previous parameter values
                 this.messageBuffer = '';
-                
+
                 this.initializeElements();
                 this.attachEventListeners();
                 this.checkSerialSupport();
@@ -506,10 +527,10 @@ if (Serial.available()) {
 
                 try {
                     const baudRate = parseInt(this.baudRateSelect.value);
-                    
+
                     // Request a port and open the connection
                     this.port = await navigator.serial.requestPort();
-                    await this.port.open({ 
+                    await this.port.open({
                         baudRate: baudRate,
                         dataBits: 8,
                         stopBits: 1,
@@ -571,7 +592,7 @@ if (Serial.available()) {
                         // Convert Uint8Array to string
                         const textDecoder = new TextDecoder();
                         const chunk = textDecoder.decode(value);
-                        
+
                         // Add to buffer and process complete messages
                         this.messageBuffer += chunk;
                         this.processBuffer();
@@ -588,10 +609,10 @@ if (Serial.available()) {
             processBuffer() {
                 // Split by newlines and process complete messages
                 const lines = this.messageBuffer.split(/[\r\n]+/);
-                
+
                 // Keep the last incomplete line in the buffer
                 this.messageBuffer = lines.pop() || '';
-                
+
                 // Process complete lines
                 lines.forEach(line => {
                     if (line.trim()) {
@@ -610,7 +631,7 @@ if (Serial.available()) {
 
             processMessage(message) {
                 const trimmed = message.trim();
-                
+
                 if (trimmed.startsWith('$LOG,')) {
                     this.addLog(`Parsing as LOG data`, 'info');
                     this.processLogData(trimmed.substring(5));
@@ -620,7 +641,7 @@ if (Serial.available()) {
                 } else {
                     this.addLog(`Unknown format: "${trimmed}"`, 'error');
                     this.addLog(`Expected: $LOG,key=value or $PARAM,key=value`, 'info');
-                    
+
                     // Try to parse as simple key=value anyway
                     this.tryParseAsSimpleData(trimmed);
                 }
@@ -685,7 +706,7 @@ if (Serial.available()) {
             updateParameterDisplay() {
                 // Check if parameters actually changed
                 const parametersChanged = JSON.stringify(this.parameters) !== JSON.stringify(this.previousParameters);
-                
+
                 if (Object.keys(this.parameters).length === 0) {
                     this.paramContainer.innerHTML = '<div style="text-align: center; color: #7f8c8d; padding: 20px;">No parameters available.</div>';
                     this.previousParameters = {};
@@ -707,7 +728,7 @@ if (Serial.available()) {
                 // Store current input values and focus state before updating
                 const currentInputValues = {};
                 const focusedElement = document.activeElement;
-                const focusedParamKey = focusedElement && focusedElement.id.startsWith('param_') 
+                const focusedParamKey = focusedElement && focusedElement.id.startsWith('param_')
                     ? focusedElement.id.replace('param_', '') : null;
                 const cursorPosition = focusedElement && focusedElement.selectionStart;
 
@@ -729,7 +750,7 @@ if (Serial.available()) {
                         <button class="set-btn" onclick="mcuInterface.setParameter('${key}')">Set</button>
                     `;
                     this.paramContainer.appendChild(item);
-                    
+
                     // Restore the input value if it existed
                     const input = document.getElementById(`param_${key}`);
                     if (currentInputValues[key]) {
@@ -755,22 +776,22 @@ if (Serial.available()) {
             async setParameter(key) {
                 const input = document.getElementById(`param_${key}`);
                 const value = input.value;
-                
+
                 if (!value) {
                     this.addLog(`Error: Please enter a value for ${key}`, 'error');
                     return;
                 }
-                
+
                 if (this.writer && this.isConnected) {
                     try {
                         const message = `$SETPARAM,${key}=${value}\n`;
                         const textEncoder = new TextEncoder();
                         await this.writer.write(textEncoder.encode(message));
                         this.addLog(`TX: ${message.trim()}`, 'sent');
-                        
+
                         // Clear the input field after sending
                         input.value = '';
-                        
+
                         // Note: Current value will be updated when MCU responds with new parameter data
                         this.addLog(`Sent new value for ${key}: ${value}. Waiting for MCU confirmation...`, 'info');
                     } catch (error) {
@@ -785,10 +806,10 @@ if (Serial.available()) {
                 const logEntry = document.createElement('div');
                 logEntry.className = `log-entry ${type}`;
                 logEntry.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
-                
+
                 this.logContainer.appendChild(logEntry);
                 this.logContainer.scrollTop = this.logContainer.scrollHeight;
-                
+
                 // Limit log entries to prevent memory issues
                 const entries = this.logContainer.children;
                 if (entries.length > 100) {
@@ -808,4 +829,5 @@ if (Serial.available()) {
         // Removed simulation interval - no more fake data
     </script>
 </body>
+
 </html>
