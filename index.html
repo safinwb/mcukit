@@ -113,7 +113,7 @@
 
         .param-item {
             display: grid;
-            grid-template-columns: 1fr auto auto;
+            grid-template-columns: 1fr auto auto auto;
             gap: 10px;
             align-items: center;
             padding: 15px;
@@ -126,6 +126,17 @@
         .param-key {
             font-weight: 600;
             color: #2c3e50;
+        }
+
+        .param-current {
+            font-weight: 500;
+            color: #27ae60;
+            background: #e8f5e8;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            min-width: 60px;
+            text-align: center;
         }
 
         .param-input {
@@ -230,21 +241,60 @@
         .log-entry.raw { color: #9b59b6; }
         .log-entry.info { color: #3498db; }
 
-        .debug-section {
+        .usage-section {
             grid-column: 1 / -1;
             margin-top: 20px;
         }
 
-        .debug-container {
-            background: #34495e;
-            color: #ecf0f1;
-            padding: 20px;
+        .usage-container {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
             border-radius: 8px;
-            height: 150px;
-            overflow-y: auto;
+            padding: 25px;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        .usage-container h3 {
+            color: #2c3e50;
+            margin: 20px 0 10px 0;
+            font-size: 1.1em;
+            border-left: 4px solid #3498db;
+            padding-left: 10px;
+        }
+
+        .usage-container h3:first-child {
+            margin-top: 0;
+        }
+
+        .usage-container code {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .usage-container pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            overflow-x: auto;
             font-family: 'Courier New', monospace;
             font-size: 0.85em;
-            line-height: 1.3;
+            line-height: 1.4;
+        }
+
+        .usage-container ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .usage-container li {
+            margin-bottom: 5px;
         }
 
         .clear-btn {
@@ -277,7 +327,11 @@
             .param-item {
                 grid-template-columns: 1fr;
                 gap: 10px;
-                text-align: center;
+                text-align: left;
+            }
+
+            .param-item > * {
+                margin: 5px 0;
             }
         }
     </style>
@@ -285,7 +339,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>MCU Data Interface - Debug Mode</h1>
+            <h1>MCU Data Interface</h1>
             <div>
                 Status: <span id="connectionStatus">Disconnected</span>
                 <span id="statusIndicator" class="status-indicator status-disconnected"></span>
@@ -337,17 +391,65 @@
                 </h2>
                 <div id="logContainer" class="log-container">
                     <div class="log-entry info">System: Ready to connect...</div>
-                    <div class="log-entry info">Debug Mode: All received data will be shown</div>
                 </div>
             </div>
 
-            <div class="section debug-section">
+            <div class="section usage-section">
                 <h2 class="section-title">
-                    🐛 Raw Data Debug
-                    <button class="clear-btn" onclick="mcuInterface.clearDebug()">Clear Debug</button>
+                    📖 MCU Communication Protocol
                 </h2>
-                <div id="debugContainer" class="debug-container">
-                    <div class="log-entry info">Raw data from MCU will appear here...</div>
+                <div class="usage-container">
+                    <h3>📤 Messages FROM MCU to Interface</h3>
+                    <p><strong>Data Values (sensor readings, status, etc.):</strong></p>
+                    <pre>$LOG,Temperature=25.3,Humidity=60,Pressure=1013
+$LOG,LED_Status=ON,Motor_Speed=150</pre>
+                    
+                    <p><strong>Parameters (configurable settings):</strong></p>
+                    <pre>$PARAM,MAX_TEMP=30,MIN_TEMP=10,THRESHOLD=50
+$PARAM,LED_BRIGHTNESS=80,MOTOR_SPEED=100</pre>
+                    
+                    <ul>
+                        <li>Each message must end with newline (<code>\n</code> or <code>\r\n</code>)</li>
+                        <li>Use comma-separated key=value pairs</li>
+                        <li>Data values appear in the "📊 Data Values" section</li>
+                        <li>Parameters appear in the "⚙️ Parameters" section with input fields</li>
+                    </ul>
+
+                    <h3>📥 Messages FROM Interface to MCU</h3>
+                    <p><strong>Setting Parameters:</strong></p>
+                    <pre>$SETPARAM,MAX_TEMP=35
+$SETPARAM,LED_BRIGHTNESS=90</pre>
+                    
+                    <ul>
+                        <li>Sent when user clicks "Set" button in Parameters section</li>
+                        <li>MCU should update the parameter and send back confirmation with <code>$PARAM</code> message</li>
+                    </ul>
+
+                    <h3>🔄 Recommended MCU Code Structure</h3>
+                    <p><strong>Arduino Example:</strong></p>
+                    <pre>// Send data values periodically
+Serial.println("$LOG,Temperature=25.3,Humidity=60");
+
+// Send parameters on startup or when changed
+Serial.println("$PARAM,MAX_TEMP=30,MIN_TEMP=10");
+
+// Handle incoming parameter changes
+if (Serial.available()) {
+  String cmd = Serial.readStringUntil('\n');
+  if (cmd.startsWith("$SETPARAM,")) {
+    // Parse and update parameter
+    // Send confirmation back
+    Serial.println("$PARAM,MAX_TEMP=35");  // Confirm new value
+  }
+}</pre>
+
+                    <h3>💡 Tips</h3>
+                    <ul>
+                        <li>Send <code>$PARAM</code> messages on MCU startup so interface knows available parameters</li>
+                        <li>Update parameter values periodically or after changes</li>
+                        <li>Use descriptive names for better user experience</li>
+                        <li>Data values update automatically, parameters need user interaction to change</li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -362,6 +464,7 @@
                 this.isConnected = false;
                 this.dataValues = {};
                 this.parameters = {};
+                this.previousParameters = {}; // Track previous parameter values
                 this.messageBuffer = '';
                 
                 this.initializeElements();
@@ -379,7 +482,7 @@
                 this.dataContainer = document.getElementById('dataContainer');
                 this.paramContainer = document.getElementById('paramContainer');
                 this.logContainer = document.getElementById('logContainer');
-                this.debugContainer = document.getElementById('debugContainer');
+                // Removed debugContainer reference
             }
 
             attachEventListeners() {
@@ -469,9 +572,6 @@
                         const textDecoder = new TextDecoder();
                         const chunk = textDecoder.decode(value);
                         
-                        // Show raw data in debug window
-                        this.addDebug(`Raw chunk: "${chunk}" (${chunk.length} bytes)`);
-                        
                         // Add to buffer and process complete messages
                         this.messageBuffer += chunk;
                         this.processBuffer();
@@ -486,9 +586,6 @@
             }
 
             processBuffer() {
-                // Show current buffer state
-                this.addDebug(`Buffer: "${this.messageBuffer}"`);
-                
                 // Split by newlines and process complete messages
                 const lines = this.messageBuffer.split(/[\r\n]+/);
                 
@@ -514,11 +611,11 @@
             processMessage(message) {
                 const trimmed = message.trim();
                 
-                this.addDebug(`Processing: "${trimmed}"`);
-                
                 if (trimmed.startsWith('$LOG,')) {
+                    this.addLog(`Parsing as LOG data`, 'info');
                     this.processLogData(trimmed.substring(5));
                 } else if (trimmed.startsWith('$PARAM,')) {
+                    this.addLog(`Parsing as PARAM data`, 'info');
                     this.processParameterData(trimmed.substring(7));
                 } else {
                     this.addLog(`Unknown format: "${trimmed}"`, 'error');
@@ -551,7 +648,6 @@
                     const [key, value] = pair.split('=');
                     if (key && value !== undefined) {
                         this.dataValues[key.trim()] = value.trim();
-                        this.addDebug(`LOG data: ${key.trim()} = ${value.trim()}`);
                     }
                 });
                 this.updateDataDisplay();
@@ -563,7 +659,6 @@
                     const [key, value] = pair.split('=');
                     if (key && value !== undefined) {
                         this.parameters[key.trim()] = value.trim();
-                        this.addDebug(`PARAM data: ${key.trim()} = ${value.trim()}`);
                     }
                 });
                 this.updateParameterDisplay();
@@ -588,10 +683,40 @@
             }
 
             updateParameterDisplay() {
+                // Check if parameters actually changed
+                const parametersChanged = JSON.stringify(this.parameters) !== JSON.stringify(this.previousParameters);
+                
                 if (Object.keys(this.parameters).length === 0) {
                     this.paramContainer.innerHTML = '<div style="text-align: center; color: #7f8c8d; padding: 20px;">No parameters available.</div>';
+                    this.previousParameters = {};
                     return;
                 }
+
+                // Only update if parameters changed or if container is empty
+                if (!parametersChanged && this.paramContainer.children.length > 0) {
+                    // Just update the current value displays without recreating inputs
+                    Object.entries(this.parameters).forEach(([key, value]) => {
+                        const currentSpan = document.querySelector(`#current_${key}`);
+                        if (currentSpan) {
+                            currentSpan.textContent = `Current: ${value}`;
+                        }
+                    });
+                    return;
+                }
+
+                // Store current input values and focus state before updating
+                const currentInputValues = {};
+                const focusedElement = document.activeElement;
+                const focusedParamKey = focusedElement && focusedElement.id.startsWith('param_') 
+                    ? focusedElement.id.replace('param_', '') : null;
+                const cursorPosition = focusedElement && focusedElement.selectionStart;
+
+                Object.keys(this.parameters).forEach(key => {
+                    const input = document.getElementById(`param_${key}`);
+                    if (input) {
+                        currentInputValues[key] = input.value;
+                    }
+                });
 
                 this.paramContainer.innerHTML = '';
                 Object.entries(this.parameters).forEach(([key, value]) => {
@@ -599,16 +724,42 @@
                     item.className = 'param-item';
                     item.innerHTML = `
                         <span class="param-key">${key}</span>
-                        <input type="number" class="param-input" value="${value}" id="param_${key}">
+                        <span class="param-current" id="current_${key}">Current: ${value}</span>
+                        <input type="number" class="param-input" placeholder="New value" id="param_${key}">
                         <button class="set-btn" onclick="mcuInterface.setParameter('${key}')">Set</button>
                     `;
                     this.paramContainer.appendChild(item);
+                    
+                    // Restore the input value if it existed
+                    const input = document.getElementById(`param_${key}`);
+                    if (currentInputValues[key]) {
+                        input.value = currentInputValues[key];
+                    }
                 });
+
+                // Restore focus and cursor position
+                if (focusedParamKey) {
+                    const newFocusedElement = document.getElementById(`param_${focusedParamKey}`);
+                    if (newFocusedElement) {
+                        newFocusedElement.focus();
+                        if (cursorPosition !== null) {
+                            newFocusedElement.setSelectionRange(cursorPosition, cursorPosition);
+                        }
+                    }
+                }
+
+                // Update previous parameters
+                this.previousParameters = JSON.parse(JSON.stringify(this.parameters));
             }
 
             async setParameter(key) {
                 const input = document.getElementById(`param_${key}`);
                 const value = input.value;
+                
+                if (!value) {
+                    this.addLog(`Error: Please enter a value for ${key}`, 'error');
+                    return;
+                }
                 
                 if (this.writer && this.isConnected) {
                     try {
@@ -617,8 +768,11 @@
                         await this.writer.write(textEncoder.encode(message));
                         this.addLog(`TX: ${message.trim()}`, 'sent');
                         
-                        // Update local parameter value
-                        this.parameters[key] = value;
+                        // Clear the input field after sending
+                        input.value = '';
+                        
+                        // Note: Current value will be updated when MCU responds with new parameter data
+                        this.addLog(`Sent new value for ${key}: ${value}. Waiting for MCU confirmation...`, 'info');
                     } catch (error) {
                         this.addLog(`Error sending parameter: ${error.message}`, 'error');
                     }
@@ -642,29 +796,9 @@
                 }
             }
 
-            addDebug(message) {
-                const debugEntry = document.createElement('div');
-                debugEntry.className = 'log-entry raw';
-                debugEntry.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
-                
-                this.debugContainer.appendChild(debugEntry);
-                this.debugContainer.scrollTop = this.debugContainer.scrollHeight;
-                
-                // Limit debug entries
-                const entries = this.debugContainer.children;
-                if (entries.length > 50) {
-                    this.debugContainer.removeChild(entries[0]);
-                }
-            }
-
             clearLog() {
                 this.logContainer.innerHTML = '';
                 this.addLog('Log cleared', 'info');
-            }
-
-            clearDebug() {
-                this.debugContainer.innerHTML = '';
-                this.addDebug('Debug cleared');
             }
         }
 
